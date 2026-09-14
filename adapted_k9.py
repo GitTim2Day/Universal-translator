@@ -53,28 +53,21 @@ class SecureLog:
     def read_all(self):
         print("\n--- Secure Log Contents ---")
         for rec in self.chain:
-            print(f" prev={rec['prev_hash'][:16]}... hash={rec['hash'][:16]}...")
+            print(f"prev={rec['prev_hash'][:16]}... hash={rec['hash'][:16]}...")
         print("---------------------------\n")
 
-# CLI
-def cli():
-    log = SecureLog()
-    print("PET K9 Secure Log CLI")
-    print("Commands: append <json>, read, quit")
-    while True:
-        cmd = input("> ").strip()
-        if cmd == "quit":
-            break
-        elif cmd == "read":
-            log.read_all()
-        elif cmd.startswith("append "):
-            try:
-                entry = json.loads(cmd[7:])
-                log.append(entry)
-            except Exception as e:
-                print(f"Error: {e}")
-        else:
-            print("Unknown command")
+def translate_and_log(audio, target_lang, log):
+    if audio is None:
+        return "No audio received."
+    english = "Hello, how are you?"
+    translated = "Bonjour, comment ça va ?" if target_lang == "French" else "Hola, ¿cómo estás?"
+    entry = {"type": "translation", "original": english, "target_lang": target_lang, "translation": translated, "sensitive": False}
+    log.append(entry)
+    return translated
 
 if __name__ == "__main__":
-    cli()
+    log = SecureLog(master_key=b"0"*32)
+    print(translate_and_log("audio1", "French", log))
+    log.append({"type":"test", "sensitive": True, "data": "classified"})
+    print("Secure mode:", log.secure_mode)
+    log.read_all()
