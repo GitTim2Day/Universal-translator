@@ -1,6 +1,7 @@
 import hashlib
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-import os, json
+import os
+import json
 from datetime import datetime
 
 class SecureLog:
@@ -18,7 +19,11 @@ class SecureLog:
         aesgcm = AESGCM(self.key)
         nonce = os.urandom(12)
         ciphertext = aesgcm.encrypt(nonce, json.dumps(data).encode(), None)
-        return {"nonce": nonce.hex(), "ciphertext": ciphertext.hex(), "hash": self.hash_entry(data)}
+        return {
+            "nonce": nonce.hex(),
+            "ciphertext": ciphertext.hex(),
+            "hash": self.hash_entry(data)
+        }
 
     def decrypt(self, encrypted_entry):
         if "nonce" not in encrypted_entry or "ciphertext" not in encrypted_entry:
@@ -61,7 +66,13 @@ def translate_and_log(audio, target_lang, log):
         return "No audio received."
     english = "Hello, how are you?"
     translated = "Bonjour, comment ça va ?" if target_lang == "French" else "Hola, ¿cómo estás?"
-    entry = {"type": "translation", "original": english, "target_lang": target_lang, "translation": translated, "sensitive": False}
+    entry = {
+        "type": "translation",
+        "original": english,
+        "target_lang": target_lang,
+        "translation": translated,
+        "sensitive": False
+    }
     log.append(entry)
     return translated
 
