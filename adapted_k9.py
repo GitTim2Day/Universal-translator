@@ -1,0 +1,80 @@
+import hashlib
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+import os, json
+from datetime import datetime
+
+class SecureLog:
+    def __init__(self, master_key=None, log_file="pet_k9_secure.log"):
+        self.key = master_key or os.urandom(32)
+        self.log_file = log_file
+        self.secure_mode = False
+        self.chain = []
+
+    def hash_entry(self, data):
+        entry = json.dumps(data, sort_keys=True).encode()
+        return hashlib.sha512(entry).hexdigest()
+
+    def encrypt(self, data):
+        aesgcm = AESGCM(self.key)
+        nonce = os.urandom(12)
+        ciphertext = aesgcm.encrypt(nonce, json.dumps(data).encode(), None)
+        return {"nonce": nonce.hex(), "ciphertext": ciphertext.hex(), "hash": self.hash_entry(data)}
+
+    def decrypt(self, encrypted_entry):
+        if "nonce" not in encrypted_entry or "ciphertext" not in encrypted_entry:
+            raise ValueError("Not an encrypted entry")
+        aesgcm = AESGCM(self.key)
+        nonce = bytes.fromhex(encrypted_entry["nonce"])
+        ciphertext = bytes.fromhex(encrypted_entry["ciphertext"])
+        plaintext = aesgcm.decrypt(nonce, ciphertext, None)
+        data = json.loads(plaintext.decode())
+        if self.hash_entry(data) != encrypted_entry["hash"]:
+            raise ValueError("Data has been tampered with!")
+        return data
+
+    def append(self, entry):
+        if entry.get("sensitive"):
+            if not self.secure_mode:
+                print("SECURE MODE ACTIVATED — sensitive data detected")
+                self.secure_mode = True
+        prev_hash = self.chain[-1]["hash"] if self.chain else "GENESIS"
+        payload = self.encrypt(entry) if self.secure_mode else entry
+        record = {
+            "timestamp": datetime.now().isoformat(),
+            "prev_hash": prev_hash,
+            "payload": payload,
+            "hash": self.hash_entry(entry)
+        }
+        self.chain.append(record)
+        with open(self.log_file, "a") as f:
+            f.write(json.dumps(record) + "\n")
+        print(f"Entry appended at {record['timestamp']}")
+
+    def read_all(self):
+        print("\n--- Secure Log Contents ---")
+        for rec in self.chain:
+            print(f" prev={rec['prev_hash'][:16]}... hash={rec['hash'][:16]}...")
+        print("---------------------------\n")
+
+# CLI
+def cli():
+    log = SecureLog()
+    print("PET K9 Secure Log CLI")
+    print("Commands: append <json>, read, quit")
+    while True:
+        cmd = input("> ").strip()
+        if cmd == "quit":
+            break
+        elif cmd == "read":
+            log.read_all()
+        elif cmd.startswith("append "):
+            try:
+                entry = json.loads(cmd[7:])
+                log.append(entry)
+            except Exception as e:
+                print(f"Error: {e}")
+        else:
+            print("Unknown command")
+
+if __name__ == "__main__":
+    cli()
