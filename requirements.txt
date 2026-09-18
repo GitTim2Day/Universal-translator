@@ -1,0 +1,7 @@
+# Earned third-party imports only (fail-closed; no invented exact pins).
+# Sources: app.py (gradio, transformers); adapted_k9.py (cryptography).
+# multi_lang_stereo_voice_routing.py: stdlib only.
+# torch: NOT directly imported — omitted. transformers pipelines may pull it transitively at install/runtime.
+gradio
+transformers
+cryptography
