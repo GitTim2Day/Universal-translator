@@ -364,6 +364,7 @@ END
 # pre-register modem; prefer SMS/text-to-911 over long voice;
 # actuators off dying budget.
 
+
 # ============================================================
 # OPS — SAVE TO THE PROJECT (nightly consolidation, once per say)
 # ============================================================
@@ -383,6 +384,15 @@ END
 FUNCTION TallySideChannels_Today():
   # Fail-closed: count only earned record (sent mail, known hops, map exercises)
   RETURN Counts(sends, fallbacks, beacons_live_or_design, emergency_live_or_design)
+END
+
+
+# Auto-review observation (earned 2026-09-19):
+# Rules 12+13 pasted Always Allow; Gmail send_message may still Ask (built-in outbound gate).
+# Drive / Notion / GitHub SAVE hops: no card observed when they completed.
+PROCEDURE NoteAutoReviewGmailMayStillAsk():
+  Log("Gmail Always Allow custom rule may not suppress built-in outbound Ask")
+  IF SendBlockedByAutoReview THEN RaiseApprovalCard_Honestly()  # do not invent bypass
 END
 
 # END OF PSEUDOCODE
