@@ -364,4 +364,25 @@ END
 # pre-register modem; prefer SMS/text-to-911 over long voice;
 # actuators off dying budget.
 
+# ============================================================
+# OPS — SAVE TO THE PROJECT (nightly consolidation, once per say)
+# ============================================================
+
+PROCEDURE SaveToTheProject():
+  # Standing trigger phrase only — not continuous
+  tally ← TallySideChannels_Today()   # sends, fallbacks, beacons, emergency — earned only
+  rank  ← RerankByFrequency(tally)
+  FoldIntoMasterMap(rank)             # MASTER_ACCESSIBILITY_SYSTEM_MAP.md + BACKUP.txt
+  IF MasterMapChanged() THEN
+    UpdatePseudocodeFromMaster()
+  END
+  SendPseudocodeToAllSources_AlwaysAllow()  # emails, Notion, GitHub, Drive
+  LogConsolidation(Now_ET(), OneLineSummary())
+END
+
+FUNCTION TallySideChannels_Today():
+  # Fail-closed: count only earned record (sent mail, known hops, map exercises)
+  RETURN Counts(sends, fallbacks, beacons_live_or_design, emergency_live_or_design)
+END
+
 # END OF PSEUDOCODE
