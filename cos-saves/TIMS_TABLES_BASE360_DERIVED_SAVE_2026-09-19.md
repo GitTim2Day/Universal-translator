@@ -19,4 +19,7 @@ ASSERTED DERIVED. **Not** sealed `Tims_Tables_Base360_Full_Reference.csv` (still
 VAL 9/9 vs 2/3 add + exact sin30 + pole + e-4 k=36.
 
 ## Drive
-(see ledger email / Notion for live link after upload)
+https://drive.google.com/file/d/1lp47SYL68Zi8GYYBGtasVHFBcnZ_cpR1/view?usp=drivesdk
+
+## Notion
+https://app.notion.com/p/3e0c86699c9481258ebaf174eec0c7ff
